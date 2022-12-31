@@ -1,0 +1,30 @@
+{
+    "name": "dreadkopp/image-optimizer",
+    "type": "library",
+    "require": {
+        "illuminate/support": "10.x-dev",
+        "illuminate/filesystem": "10.x-dev",
+        "intervention/image": "^3.0@alpha",
+        "guzzlehttp/guzzle": "^7.5@dev"
+    },
+    "require-dev": {
+        "orchestra/testbench": "8.0.x-dev",
+        "phpunit/phpunit": "9.5.x-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dreadkopp\\ImageOptimizer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Arne Ziegert"
+        }
+    ],
+    "minimum-stability": "dev"
+}
