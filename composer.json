@@ -2,13 +2,13 @@
     "name": "dreadkopp/image-optimizer",
     "type": "library",
     "require": {
-        "illuminate/support": "10.x-dev",
-        "illuminate/filesystem": "10.x-dev",
-        "intervention/image": "^3.0@alpha",
-        "guzzlehttp/guzzle": "^7.5@dev"
+        "illuminate/support": "^9",
+        "illuminate/filesystem": "^9",
+        "intervention/image": "^2",
+        "guzzlehttp/guzzle": "^7.5"
     },
     "require-dev": {
-        "orchestra/testbench": "8.0.x-dev",
+        "orchestra/testbench": "^7",
         "phpunit/phpunit": "9.5.x-dev"
     },
     "autoload": {
@@ -26,5 +26,5 @@
             "name": "Arne Ziegert"
         }
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }

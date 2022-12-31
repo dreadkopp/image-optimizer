@@ -3,27 +3,36 @@
 namespace Dreadkopp\ImageOptimizer;
 
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Interfaces\ImageInterface;
+use Intervention\Image\Image;
+use Intervention\Image\Facades\Image as ImageFacade;
 
 class ImageFetcher
 {
 
-    public function fetchImage(string $path) : ImageInterface
+    public function fetchImage(string $path): Image
     {
-        // strip query parameters
+
+
 
         // decide if local or remote
+        if (str_starts_with($path, 'http')) {
 
-        if (str_starts_with($path,'http')) {
+            // Todo: strip query parameters
+
+            $urlInfo = parse_url($path);
+            $urlInfo['query'] = '';
+            $urlInfo['fragment'] = '';
+            $scheme = $urlInfo['scheme'];
+            $urlInfo['scheme'] = '';
+            $path = $scheme.'://'.implode('', $urlInfo);
+
             $client = new Client();
             $source = $client->get($path)->getBody()->getContents();
         } else {
-            $source = file_get_contents(config('filesystems.public.root').'/'.$path);
+            $source = file_get_contents(config('filesystems.public.root') . '/' . $path);
         }
 
-        return (new ImageManager())->make($source);
+        return ImageFacade::make($source);
     }
 
 }

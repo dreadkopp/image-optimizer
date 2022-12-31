@@ -1,13 +1,17 @@
 <?php
 namespace Dreadkopp\ImageOptimizer;
 
+use Illuminate\Http\Response;
+use Intervention\Image\Constraint;
+use Intervention\Image\Facades\Image;
+
 class ImageHandler
 {
 
     // maximum width of images in px
     const MAXWIDTH = 1300;
 
-    public function getOptimized(string $base64EncodedPath) :string
+    public function getOptimized(string $base64EncodedPath) :Response
     {
         $server = new ImageServer();
         $uploader = new Uploader();
@@ -24,10 +28,12 @@ class ImageHandler
             $unOptimized = $fetcher->fetchImage($decodedPath);
 
             if ($unOptimized->getWidth() > self::MAXWIDTH) {
-                $unOptimized->resize(self::MAXWIDTH);
+                $unOptimized->resize(self::MAXWIDTH,null, function (Constraint $constraint) {
+                    $constraint->aspectRatio();
+                });
             }
-            $webPImage = $unOptimized->toWebp();
-            $plainImage = $unOptimized->toPng();
+            $webPImage = $unOptimized->stream('webp',80)->getContents();
+            $plainImage = $unOptimized->stream('png',80)->getContents();
 
             $uploader->upload($webPImage, $decodedPath, true);
             $uploader->upload($plainImage, $decodedPath, false);
@@ -38,7 +44,7 @@ class ImageHandler
             }
         }
 
-        return $image;
+        return Image::make($image)->response();
     }
 
     protected function requestWantsWebp():bool
