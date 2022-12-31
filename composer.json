@@ -2,6 +2,8 @@
     "name": "dreadkopp/image-optimizer",
     "type": "library",
     "require": {
+        "php": "^8",
+        "ext-gd": "*",
         "illuminate/support": "^9",
         "illuminate/filesystem": "^9",
         "intervention/image": "^2",
