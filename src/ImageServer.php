@@ -3,6 +3,7 @@ namespace Dreadkopp\ImageOptimizer;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
+use Intervention\Image\Facades\Image as ImageFacade;
 
 class ImageServer
 {
@@ -15,13 +16,15 @@ class ImageServer
             $store = 'image.webp';
         }
 
-        $image = Storage::disk($store)->get($path);
+        $source = Storage::disk($store)->get($path);
 
-        if (!$image) {
+        if (!$source) {
             throw new OptimizedImageNotFound();
         }
 
-        return Image::make($image);
+        return ImageFacade::cache(static function ($image) use ($source) {
+            $image->make($source);
+        },10, true);
 
     }
 

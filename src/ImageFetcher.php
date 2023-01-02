@@ -11,9 +11,6 @@ class ImageFetcher
 
     public function fetchImage(string $path): Image
     {
-
-
-
         // decide if local or remote
         if (str_starts_with($path, 'http')) {
 
@@ -32,7 +29,9 @@ class ImageFetcher
             $source = file_get_contents(config('filesystems.public.root') . '/' . $path);
         }
 
-        return ImageFacade::make($source);
+        return ImageFacade::cache(static function ($image) use ($source) {
+            $image->make($source);
+        },10, true);
     }
 
 }
