@@ -12,23 +12,8 @@ use Orchestra\Testbench\TestCase;
 /** @covers \Dreadkopp\ImageOptimizer\ImageHandler */
 /** @covers \Dreadkopp\ImageOptimizer\ImageFetcher */
 /** @covers \Dreadkopp\ImageOptimizer\Uploader */
-/** @covers \Dreadkopp\ImageOptimizer\ImageServer */
 class HandlerTest extends TestCase
 {
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Storage::fake('image.png');
-        Storage::fake('image.webp');
-
-        Storage::disk('image.webp')->deleteDirectory('https');
-        Storage::disk('image.png')->deleteDirectory('https');
-
-        $this->app->bind('image', fn() => new ImageManager());
-
-        config(['filesystems.public.root' => __DIR__ . '/resources']);
-    }
 
     public function testImageGetsQueried(): void
     {
@@ -57,15 +42,28 @@ class HandlerTest extends TestCase
 
     }
 
-
-    public function testResizeParameterIsHonored() :void
+    public function testResizeParameterIsHonored(): void
     {
         $originalLocal = '/2.jpg';
 
         $handler = new ImageHandler();
-        $png = $handler->getOptimized(base64_encode($originalLocal),100)->getContent();
+        $png = $handler->getOptimized(base64_encode($originalLocal), 100)->getContent();
 
-        self::assertEquals(100, Image::make($png)->getWidth() );
+        self::assertEquals(100, Image::make($png)->getWidth());
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('image.png');
+        Storage::fake('image.webp');
+
+        Storage::disk('image.webp')->deleteDirectory('https');
+        Storage::disk('image.png')->deleteDirectory('https');
+
+        $this->app->bind('image', fn() => new ImageManager());
+
+        config(['filesystems.public.root' => __DIR__ . '/resources']);
     }
 
 }
