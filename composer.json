@@ -21,7 +21,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Dreadkopp\\ImageOptimizer\\Tests\\": "tests/"
         }
     },
     "authors": [

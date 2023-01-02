@@ -1,22 +1,25 @@
 <?php
 namespace Dreadkopp\ImageOptimizer;
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
-use Intervention\Image\Constraint;
 use Intervention\Image\Facades\Image as ImageFacade;
 
 class ImageHandler
 {
 
+    use DispatchesJobs;
+
     // maximum width of images in px
     const MAXWIDTH = 1300;
     const QUALITY = 80;
+    public function __construct(protected ImageFetcher $fetcher)
+    {
+    }
 
     public function getOptimized(string $base64EncodedPath, ?int $maxWidth = null, ?int $quality = null) :Response
     {
-        $uploader = new Uploader();
-        $fetcher = new ImageFetcher();
 
         $browserWantsWebp = $this->requestWantsWebp();
 
@@ -24,39 +27,23 @@ class ImageHandler
 
 
         try {
-            $source = $fetcher->getOptimizedImageSource($decodedPath, $browserWantsWebp);
+            $source = $this->fetcher->getOptimizedImageSource($decodedPath, $browserWantsWebp);
 
             return ImageFacade::cache(static function ($image) use ($source) {
                 $image->make($source);
             },10, true)->response();
         } catch (OptimizedImageNotFound) {
             Log::info('Did not find optimized image for '.$decodedPath);
+
+            $this->dispatch(new OptimizeImageJob($decodedPath,($maxWidth ?? self::MAXWIDTH) ,($quality ?? self::QUALITY)));
+
+            $source = $this->fetcher->getOriginalImageSource($decodedPath);
+
+            return ImageFacade::cache(static function ($image) use ($source) {
+                $image->make($source);
+            },2, true)->response();
         }
 
-        $source = $fetcher->getOriginalImageSource($decodedPath);
-
-        $unOptimized =  ImageFacade::cache(static function ($image) use ($source) {
-            $image->make($source);
-        },10, true);
-
-        if ($unOptimized->getWidth() > ($maxWidth ?? self::MAXWIDTH)) {
-            $unOptimized->resize(($maxWidth ?? self::MAXWIDTH),null, function (Constraint $constraint) {
-                $constraint->aspectRatio();
-            });
-        }
-
-        $webPImage = $unOptimized->encode('webp',$quality ?? self::QUALITY);
-        $plainImage = (clone $unOptimized)->encode('png',$quality ?? self::QUALITY);
-
-        $uploader->upload($webPImage->getEncoded(), $decodedPath, true);
-        $uploader->upload($plainImage->getEncoded(), $decodedPath, false);
-
-        $image = $plainImage;
-        if ($browserWantsWebp) {
-            $image = $webPImage;
-        }
-
-        return $image->response();
     }
 
     protected function requestWantsWebp():bool
