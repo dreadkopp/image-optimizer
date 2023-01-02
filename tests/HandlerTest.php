@@ -5,15 +5,20 @@ namespace tests;
 use Dreadkopp\ImageOptimizer\ImageHandler;
 use finfo;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManager;
 use Orchestra\Testbench\TestCase;
 
+/** @covers \Dreadkopp\ImageOptimizer\ImageHandler */
+/** @covers \Dreadkopp\ImageOptimizer\ImageFetcher */
+/** @covers \Dreadkopp\ImageOptimizer\Uploader */
+/** @covers \Dreadkopp\ImageOptimizer\ImageServer */
 class HandlerTest extends TestCase
 {
 
-    public function testImageGetsQueried(): void
+    protected function setUp(): void
     {
-
+        parent::setUp();
         Storage::fake('image.png');
         Storage::fake('image.webp');
 
@@ -23,6 +28,10 @@ class HandlerTest extends TestCase
         $this->app->bind('image', fn() => new ImageManager());
 
         config(['filesystems.public.root' => __DIR__ . '/resources']);
+    }
+
+    public function testImageGetsQueried(): void
+    {
         $original = 'https://www.gstatic.com/webp/gallery/1.jpg?foo=bar#anchor';
         $originalLocal = '/2.jpg';
 
@@ -46,6 +55,17 @@ class HandlerTest extends TestCase
         self::assertEquals('image/png', $mimeShouldBePngLocal);
         self::assertEquals('image/webp', $mimeShouldBeWebp);
 
+    }
+
+
+    public function testResizeParameterIsHonored() :void
+    {
+        $originalLocal = '/2.jpg';
+
+        $handler = new ImageHandler();
+        $png = $handler->getOptimized(base64_encode($originalLocal),100)->getContent();
+
+        self::assertEquals(100, Image::make($png)->getWidth() );
     }
 
 }

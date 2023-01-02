@@ -2,10 +2,11 @@
 namespace Dreadkopp\ImageOptimizer;
 
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class ImageServer
 {
-    public function getOptimizedImage(string $path, bool $webp) :string
+    public function getOptimizedImage(string $path, bool $webp) :\Intervention\Image\Image
     {
 
         // place locally or somewhere 'near' and cached as well
@@ -20,7 +21,7 @@ class ImageServer
             throw new OptimizedImageNotFound();
         }
 
-        return $image;
+        return Image::make($image);
 
     }
 

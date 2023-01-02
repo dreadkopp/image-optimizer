@@ -3,15 +3,15 @@ namespace Dreadkopp\ImageOptimizer;
 
 use Illuminate\Http\Response;
 use Intervention\Image\Constraint;
-use Intervention\Image\Facades\Image;
 
 class ImageHandler
 {
 
     // maximum width of images in px
     const MAXWIDTH = 1300;
+    const QUALITY = 80;
 
-    public function getOptimized(string $base64EncodedPath) :Response
+    public function getOptimized(string $base64EncodedPath, ?int $maxWidth = null, ?int $quality = null) :Response
     {
         $server = new ImageServer();
         $uploader = new Uploader();
@@ -27,16 +27,17 @@ class ImageHandler
         } catch (OptimizedImageNotFound) {
             $unOptimized = $fetcher->fetchImage($decodedPath);
 
-            if ($unOptimized->getWidth() > self::MAXWIDTH) {
-                $unOptimized->resize(self::MAXWIDTH,null, function (Constraint $constraint) {
+            if ($unOptimized->getWidth() > ($maxWidth ?? self::MAXWIDTH)) {
+                $unOptimized->resize(($maxWidth ?? self::MAXWIDTH),null, function (Constraint $constraint) {
                     $constraint->aspectRatio();
                 });
             }
-            $webPImage = $unOptimized->stream('webp',80)->getContents();
-            $plainImage = $unOptimized->stream('png',80)->getContents();
 
-            $uploader->upload($webPImage, $decodedPath, true);
-            $uploader->upload($plainImage, $decodedPath, false);
+            $webPImage = $unOptimized->encode('webp',$quality ?? self::QUALITY);
+            $plainImage = (clone $unOptimized)->encode('png',$quality ?? self::QUALITY);
+
+            $uploader->upload($webPImage->getEncoded(), $decodedPath, true);
+            $uploader->upload($plainImage->getEncoded(), $decodedPath, false);
 
             $image = $plainImage;
             if ($browserWantsWebp) {
@@ -44,7 +45,7 @@ class ImageHandler
             }
         }
 
-        return Image::make($image)->response();
+        return $image->response();
     }
 
     protected function requestWantsWebp():bool
