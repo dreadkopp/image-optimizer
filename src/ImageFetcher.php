@@ -4,8 +4,6 @@ namespace Dreadkopp\ImageOptimizer;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Image;
-use Intervention\Image\Facades\Image as ImageFacade;
 
 class ImageFetcher
 {
