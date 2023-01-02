@@ -26,7 +26,7 @@ class ImageFetcher
             $client = new Client();
             $source = $client->get($path)->getBody()->getContents();
         } else {
-            $source = file_get_contents(config('filesystems.public.root') . '/' . $path);
+            $source = config('filesystems.public.root') . '/' . $path;
         }
 
         return ImageFacade::cache(static function ($image) use ($source) {
